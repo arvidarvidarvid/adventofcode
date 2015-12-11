@@ -4,16 +4,16 @@ input_pass = 'cqjxjnds'
 test_prev = 'ghijklmn'
 test_next = 'ghjaabcc'
 
-ALFABET = 'abcdefghijklmnopqrstuvwxyz'
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
 
 def increment_letter(l):
-    global ALFABET
-    if l == ALFABET[-1]:
-        return ALFABET[0]
+    global ALPHABET
+    if l == ALPHABET[-1]:
+        return ALPHABET[0]
     else:
-        curr_pos = ALFABET.find(l)
-        return ALFABET[curr_pos+1]
+        curr_pos = ALPHABET.find(l)
+        return ALPHABET[curr_pos+1]
 
 
 def get_next(password):
@@ -45,13 +45,13 @@ def pass_iol_rule(password):
 
 
 def pass_straight_rule(password):
-    global ALFABET
+    global ALPHABET
     prev_char = password[0]
     straight = 1
     i = 0
     while straight != 3 and i < len(password)-1:
-        prev_c_alpb_pos = ALFABET.find(prev_char)
-        if ALFABET.find(password[i+1]) == prev_c_alpb_pos+1:
+        prev_c_alpb_pos = ALPHABET.find(prev_char)
+        if ALPHABET.find(password[i+1]) == prev_c_alpb_pos+1:
             straight += 1
         else:
             straight = 1
