@@ -1,9 +1,5 @@
 # encoding=utf8
 
-data = open('12.txt', 'r').read()
-
-data = eval(data)
-
 
 def get_leaves(data, care_about_red=False):
     if isinstance(data, dict):
@@ -21,5 +17,7 @@ def get_leaves(data, care_about_red=False):
     else:
         return 0
 
+
+data = eval(open('12.txt', 'r').read())
 print 'Part 1: %s' % get_leaves(data, False)
 print 'Part 2: %s' % get_leaves(data, True)
