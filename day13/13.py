@@ -18,29 +18,20 @@ def setup_pref_dict(raw_preferences):
 
 def get_comb_value(arr, pref_dict):
     _value = 0
-    for i in range(-1, len(arr)):
-        try:
-            _value += pref_dict[arr[i]][arr[i+1]] + pref_dict[arr[i+1]][arr[i]]
-        except IndexError:
-            pass
+    for i in range(-1, len(arr)-1):
+        _value += pref_dict[arr[i]][arr[i+1]] + pref_dict[arr[i+1]][arr[i]]
     return _value
 
 
-def get_visitors(pref_dict):
-    return pref_dict.keys()
-
-
 def add_arvid(pref_dict):
-    visitors = pref_dict.keys()
     for k, v in pref_dict.items():
         v['Arvid'] = 0
-    pref_dict['Arvid'] = {k: 0 for k in visitors}
-    visitors.append('Arvid')
+    pref_dict['Arvid'] = {k: 0 for k in pref_dict.keys()}
     return pref_dict
 
 
 def get_happiest_arrangement(pref_dict):
-    visitors = get_visitors(pref_dict)
+    visitors = pref_dict.keys()
     possible_arrangements = permutations(visitors, len(visitors))
     best_value = 0
     for arr in possible_arrangements:
