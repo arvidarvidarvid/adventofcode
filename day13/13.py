@@ -5,7 +5,7 @@ from itertools import permutations
 def setup_pref_dict(raw_preferences):
     pref_dict = dict()
     for p in raw_preferences.split('\n'):
-        m = re.match(r'(\w+) would (\w+) (\d+) .* (\w+)\.', p)
+        m = re.match(r'(\w+) \w+ (\w+) (\d+) .* (\w+)\.', p)
         n1, n2, effect, scale = m.group(1), m.group(4), m.group(2), m.group(3)
         if n1 not in pref_dict:
             pref_dict[n1] = dict()
