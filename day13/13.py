@@ -41,9 +41,7 @@ def get_happiest_arrangement(pref_dict):
     return best_value
 
 
-raw_preferences = open('13.txt', 'r').read()
-
-pref_dict = setup_pref_dict(raw_preferences)
+pref_dict = setup_pref_dict(open('13.txt', 'r').read())
 print ('Step 1, happiest combination scores: %s' %
        get_happiest_arrangement(pref_dict))
 pref_dict = add_arvid(pref_dict)
