@@ -1,7 +1,5 @@
 import re
 
-raw_props = open('14.txt', 'r').read()
-
 
 class Reindeer(object):
     def __init__(self, name, speed, endurance, rest):
@@ -59,6 +57,7 @@ def points_race(reindeer, time):
     return (winner, winner.race_score)
 
 
+raw_props = open('14.txt', 'r').read()
 reindeer = import_reindeer(raw_props)
 
 winner = distance_race(reindeer, 2503)
