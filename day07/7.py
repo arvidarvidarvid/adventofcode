@@ -1,6 +1,5 @@
 import re
 
-TOTAL_LOOKUPS = 0
 FUNCS = dict()
 
 
@@ -61,9 +60,6 @@ def string_to_result(s, key):
 
 
 def get_value(key):
-
-    global TOTAL_LOOKUPS
-
     if re.match(r'^\d+$', key):
         return key
     elif FUNCS[key][1] is not None:
@@ -75,6 +71,7 @@ def get_value(key):
 init_funcs()
 first_result = get_value('a')
 print 'Part one result: %s' % first_result
+
 init_funcs()
 FUNCS['b'] = [unicode(first_result), None]
 second_result = get_value('a')
