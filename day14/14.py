@@ -34,13 +34,11 @@ def import_reindeer(raw_props):
 
 
 def distance_race(reindeer, time):
-    best_distance = None
-    best_deer = None
+    best_distance, best_deer = None, None
     for r in reindeer:
         d = r.get_distance_at_time(time)
         if d > best_distance or best_distance is None:
-            best_distance = d
-            best_deer = r
+            best_distance, best_deer = d, r
     return (best_deer, best_distance)
 
 
@@ -48,20 +46,16 @@ def points_race(reindeer, time):
     for r in reindeer:
         r.race_score = 0
     for t in range(1, time):
-        _current_best_deer = None
-        _current_best_distance = 0
+        _c_best_deer, _c_best_dist = None, 0
         for r in reindeer:
-            _current_distance = r.get_distance_at_time(t)
-            if _current_distance > _current_best_distance:
-                _current_best_distance = _current_distance
-                _current_best_deer = r
-        _current_best_deer.race_score += 1
-    winner = None
-    best_score = 0
+            _c_dist = r.get_distance_at_time(t)
+            if _c_dist > _c_best_dist:
+                _c_best_dist, _c_best_deer = _c_dist, r
+        _c_best_deer.race_score += 1
+    winner, best_score = None, 0
     for r in reindeer:
         if r.race_score > best_score:
-            best_score = r.race_score
-            winner = r
+            best_score, winner = r.race_score, r
     return (winner, winner.race_score)
 
 
