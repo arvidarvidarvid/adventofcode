@@ -1,18 +1,20 @@
 with open('1.txt', 'r') as f:
-    string = f.read()
+    parentheses = f.read()
 
-result = 0
+floor = 0
+position_in_string = 0
 
-j = 0
-
-for i in string:
-    if i == '(':
-        result = result+1
-    if i == ')':
-        result = result-1
-    j = j+1
-    if result < 0:
-        print j
+for p in parentheses:
+    if p == '(':
+        floor = floor+1
+    if p == ')':
+        floor = floor-1
+    position_in_string = position_in_string+1
+    # Part 2, comment out to get the part 1 result
+    if floor < 0:
+        print ('Part 2: Santa ends up in the basement at position %s' %
+               position_in_string)
         break
 
-print result
+# Part 1 result
+print 'Part 1: Santa ends up on %s' % floor
