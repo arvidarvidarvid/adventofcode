@@ -345,27 +345,27 @@ funcs = {
     }
 
 
-def _not(i, ps):
-    return 0xffff - int(get_value(i, ps))
+def _not(i):
+    return 0xffff - int(get_value(i))
 
 
-def _and(i1, i2, ps):
-    return int(get_value(i1, ps)) & int(get_value(i2, ps))
+def _and(i1, i2):
+    return int(get_value(i1)) & int(get_value(i2))
 
 
-def _rshift(i, s, ps):
-    return int(get_value(i, ps)) >> int(s)
+def _rshift(i, s):
+    return int(get_value(i)) >> int(s)
 
 
-def _lshift(i, s, ps):
-    return int(get_value(i, ps)) << int(s)
+def _lshift(i, s):
+    return int(get_value(i)) << int(s)
 
 
-def _or(i1, i2, ps):
-    return int(get_value(i1, ps)) | int(get_value(i2, ps))
+def _or(i1, i2):
+    return int(get_value(i1)) | int(get_value(i2))
 
 
-def string_to_result(s, key, ps):
+def string_to_result(s, key):
 
     direct_p = re.match(r'^([a-z]{1,2}|\d+)$', s)
     not_p = re.match(r'^NOT ([a-z]{1,2}|\d+)$', s)
@@ -375,17 +375,17 @@ def string_to_result(s, key, ps):
     lshift_p = re.match(r'^([a-z]{1,2}|\d+) LSHIFT (\d{1,2})$', s)
 
     if direct_p is not None:
-        res = get_value(direct_p.group(1), ps)
+        res = get_value(direct_p.group(1))
     elif not_p is not None:
-        res = _not(not_p.group(1), ps)
+        res = _not(not_p.group(1))
     elif and_p is not None:
-        res = _and(and_p.group(1), and_p.group(2), ps)
+        res = _and(and_p.group(1), and_p.group(2))
     elif or_p is not None:
-        res = _or(or_p.group(1), or_p.group(2), ps)
+        res = _or(or_p.group(1), or_p.group(2))
     elif rshift_p is not None:
-        res = _rshift(rshift_p.group(1), rshift_p.group(2), ps)
+        res = _rshift(rshift_p.group(1), rshift_p.group(2))
     elif lshift_p is not None:
-        res = _lshift(lshift_p.group(1), lshift_p.group(2), ps)
+        res = _lshift(lshift_p.group(1), lshift_p.group(2))
     else:
         raise Exception('Failed to match to function.')
 
@@ -393,30 +393,16 @@ def string_to_result(s, key, ps):
     return res
 
 
-def get_value(key, ps=[]):
+def get_value(key):
 
     global TOTAL_LOOKUPS
-
-    print 'Looking up %s (%i lookups so far)' % (key, TOTAL_LOOKUPS)
-    TOTAL_LOOKUPS = TOTAL_LOOKUPS + 1
-
-    if TOTAL_LOOKUPS > 10000000:
-        print funcs
-        raise Exception('Reached max lookups')
-
-    if key in ps:
-        pass
-        # print 'Circular lookup. Key=%s, Parents=%s' % (key, ps)
-    else:
-        ps.append(key)
 
     if re.match(r'^\d+$', key):
         return key
     elif funcs[key][1] is not None:
         return funcs[key][1]
     else:
-        return string_to_result(funcs[key][0], key, ps)
+        return string_to_result(funcs[key][0], key)
 
 
 print get_value('a')
-print funcs
