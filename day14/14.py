@@ -24,8 +24,8 @@ class Reindeer(object):
 
 def import_reindeer(raw_props):
     reindeer = []
+    p = re.compile(r'(\w+) .* (\d+) .* (\d+) .* (\d+) \w+.')
     for l in raw_props.split('\n'):
-        p = re.compile(r'(\w+) .* (\d+) .* (\d+) .* (\d+) \w+.')
         m = re.match(p, l)
         name, speed, endurance, rest = (m.group(1), m.group(2), m.group(3),
                                         m.group(4))
