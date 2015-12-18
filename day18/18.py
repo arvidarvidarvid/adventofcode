@@ -1,63 +1,37 @@
-def get_grid(filename):
-    initial_state = [l for l in open(filename, 'r').read().split('\n')]
-    grid = []
-    for l in initial_state:
-        line = []
-        for c in l:
-            line.append(c)
-        grid.append(line)
-    return grid
+def get_grid(fn):
+    return [[c for c in l] for l in open(fn, 'r').read().split('\n')]
 
 
 def get_next_state_for_point(grid, y, x, part2=False):
 
     if part2:
-        if (y, x) in [
-                (0, 0),
-                (0, len(grid[0])-1),
-                (len(grid)-1, 0),
-                (len(grid)-1, len(grid[0])-1)
-                ]:
+        y_max, x_max = len(grid[0])-1, len(grid)-1
+        if (y, x) in [(0, 0), (0, x_max), (y_max, 0), (y_max, x_max)]:
             return '#'
 
     neighbours = []
 
-    if x > 0:
-        neighbours.append(grid[y][x-1])
-    if x < len(grid[0])-1:
-        neighbours.append(grid[y][x+1])
+    if x > 0: neighbours.append(grid[y][x-1])
+    if x < len(grid[0])-1: neighbours.append(grid[y][x+1])
 
-    if y > 0:  # Prev line if not first line
-        if x > 0:  # Not first item in line
-            neighbours.append(grid[y-1][x-1])
+    if y > 0:
+        if x > 0: neighbours.append(grid[y-1][x-1])
+        if x < len(grid[0])-1: neighbours.append(grid[y-1][x+1])
         neighbours.append(grid[y-1][x])
-        if x < len(grid[0])-1:
-            neighbours.append(grid[y-1][x+1])
 
-    if y < len(grid)-1:  # Next line if not last line
-        if x > 0:  # Not first item in line
-            neighbours.append(grid[y+1][x-1])
+    if y < len(grid)-1:
+        if x > 0: neighbours.append(grid[y+1][x-1])
+        if x < len(grid[0])-1: neighbours.append(grid[y+1][x+1])
         neighbours.append(grid[y+1][x])
-        if x < len(grid[0])-1:  #
-            neighbours.append(grid[y+1][x+1])
 
     lit_neighbours = neighbours.count('#')
-    if grid[y][x] == '#':
-        if lit_neighbours in (2, 3):
-            return '#'
-        else:
-            return '.'
-    elif grid[y][x] == '.':
-        if lit_neighbours == 3:
-            return '#'
-        else:
-            return '.'
-    else:
-        raise Exception('What?')
+    if lit_neighbours == 3: return '#'
+    elif lit_neighbours == 2 and grid[y][x] == '#': return '#'
+    else: return '.'
 
 
 def get_next_grid(grid, part2=False):
-    new_grid = [['.' for c in l] for l in grid]
+    new_grid = [['X' for c in l] for l in grid]
     for y in range(len(new_grid)):
         for x in range(len(l)):
             new_grid[y][x] = get_next_state_for_point(grid, y, x, part2)
@@ -65,24 +39,18 @@ def get_next_grid(grid, part2=False):
 
 
 def print_grid(grid):
-    for l in grid:
-        print ''.join(l)
+    for l in grid: print ''.join(l)
     print '\n'
 
 
 def get_nth_grid(grid, n, part2=False):
-    for i in range(n):
-        grid = get_next_grid(grid, part2)
+    for i in range(n): grid = get_next_grid(grid, part2)
     return grid
 
 
 def count_lights(grid):
-    count = 0
-    for l in grid:
-        for c in l:
-            if c == '#':
-                count += 1
-    return count
+    flat = ''.join(sum(grid, []))
+    return flat.count('#')
 
 
 def break_lights(grid):
@@ -90,7 +58,6 @@ def break_lights(grid):
     grid[0][len(grid[0])-1] = '#'
     grid[len(grid)-1][0] = '#'
     grid[len(grid)-1][len(grid[0])-1] = '#'
-
     return grid
 
 
