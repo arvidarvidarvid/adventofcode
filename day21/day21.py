@@ -109,14 +109,10 @@ def part1(shop):
     equipment_sets = player_equipment_combinations(shop)
     equipped_index = -1
     while winner != 'Player':
-        # Reset both boss and player
         player.reset()
         boss.reset()
-        # Grab the next set of gear
         equipped_index += 1
-        # Equip the gear
         player.equip(equipment_sets[equipped_index])
-        # Battle
         winner = battle([player, boss])['winner'].name
     return equipment_sets[equipped_index][0]
 
@@ -128,14 +124,10 @@ def part2(shop):
     equipment_sets = player_equipment_combinations(shop)
     equipped_index = len(equipment_sets)
     while winner != 'Boss':
-        # Reset both boss and player
         player.reset()
         boss.reset()
-        # Grab the next set of gear
         equipped_index -= 1
-        # Equip the gear
         player.equip(equipment_sets[equipped_index])
-        # Battle
         winner = battle([player, boss])['winner'].name
     return equipment_sets[equipped_index][0]
 
