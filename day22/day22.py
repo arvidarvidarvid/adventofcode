@@ -2,7 +2,7 @@ import math
 import logging
 import re
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
@@ -22,17 +22,17 @@ class Actor(object):
         if self.ongoing_battle is not None:
             return '%s: (%s (-%s) hp, %s dmg, %s arm, %s mp)' % (
                 unicode(self.name), self.health,
-                self.incoming_damage(self.ongoing_battle, 10), self.damage,
-                self.get_armor(self.ongoing_battle), self.mana)
+                self.incoming_damage(10), self.damage,
+                self.get_armor(), self.mana)
         else:
             return '%s: (%s hp, %s dmg, %s arm, %s mp)' % (
                 unicode(self.name), self.health, self.damage, self.armor,
                 self.mana)
 
-    def mana_to_spend(self, battle):
+    def mana_to_spend(self):
         recharge_cost = 229
 
-        e = battle.effect_is_active('Recharge', self)
+        e = self.ongoing_battle.effect_is_active('Recharge', self)
         if e is not False:
             mana_to_come = 101 * e.duration
         else:
@@ -51,15 +51,17 @@ class Actor(object):
         else:
             return False
 
-    def incoming_damage(self, battle, turns):
-        e = battle.effect_is_active('Poison', self)
+    def incoming_damage(self, turns):
+        e = self.ongoing_battle.effect_is_active('Poison', self)
+        incoming = 0
+        if self.ongoing_battle.difficulty == 'hard' and self.name == 'Player':
+            incoming += sum([1 for i in xrange(turns) if i % 2 == 0])
         if e is not False:
-            return 3 * min([turns, e.duration])
-        else:
-            return 0
+            incoming += 3 * min([turns, e.duration])
+        return incoming
 
-    def get_armor(self, battle, at_future_turn=None):
-        e = battle.effect_is_active('Shield', self)
+    def get_armor(self, at_future_turn=None):
+        e = self.ongoing_battle.effect_is_active('Shield', self)
         if e is not False:
             if at_future_turn is None:
                 return self.armor + 7
@@ -70,11 +72,11 @@ class Actor(object):
                     return self.armor
         return self.armor
 
-    def attack(self, battle):
-        o = [r for r in battle.remaining_actors if r != self][0]  # Opponent
+    def attack(self):
+        o = [r for r in self.ongoing_battle.remaining_actors if r != self][0]
 
         if self.damage > 0:
-            damage = max([0, self.damage - o.get_armor(battle)])
+            damage = max([0, self.damage - o.get_armor()])
             o.health -= damage
             logger.debug(u'%s deals %s damage to %s' % (
                   unicode(self), damage, unicode(o)))
@@ -86,10 +88,10 @@ class Actor(object):
             # Try to finish the boss quickly in the late game with a series of
             # magic missiles
 
-            conseq_mms_to_win = int(math.ceil((o.health - o.incoming_damage(
-                battle, 6))/4))
+            conseq_mms_to_win = int(math.ceil((o.health - o.incoming_damage(6)
+                                               )/4))
             incoming_damage_during_conseq_mms = (
-                conseq_mms_to_win * o.damage - sum([self.get_armor(battle, i)
+                conseq_mms_to_win * o.damage - sum([self.get_armor(i)
                                                     for i in xrange(
                                                         conseq_mms_to_win)
                                                     if i % 2 != 0]))
@@ -98,52 +100,55 @@ class Actor(object):
                     self.health > incoming_damage_during_conseq_mms):
                 logger.debug('Trying to finish off with %s magic missiles' %
                              (int(conseq_mms_to_win)+1))
-                self.cast_magic_missile(battle, o)
+                self.cast_magic_missile(o)
 
             # Quickest way to do damage over 1 turn:
             elif (self.mana >= 53 and o.health <= (
-                    4 + o.incoming_damage(battle, 1))):
+                    4 + o.incoming_damage(1))):
                 logger.debug('Trying to finish boss off with a magic missile')
-                self.cast_magic_missile(battle, o)
+                self.cast_magic_missile(o)
 
             # Quickest way to do damage over 2 turns:
             elif (self.mana >= 106 and o.health <= (
-                    8 + o.incoming_damage(battle, 3)) and
-                    (self.health + self.get_armor(battle, 2) > 9)):
+                    8 + o.incoming_damage(3)) and
+                    (self.health + self.get_armor(2) > 9)):
                 logger.debug('Trying to finish boss off in two turns with' +
                              ' two magic missiles')
-                self.cast_magic_missile(battle, o)
+                self.cast_magic_missile(o)
             elif (self.mana >= 126 and o.health <= (
-                    6 + o.incoming_damage(battle, 3)) and
-                    (self.health + self.get_armor(battle, 2) > 7)):
+                    6 + o.incoming_damage(3)) and
+                    (self.health + self.get_armor(2) > 7)):
                 logger.debug('Trying to finish boss off in two turns with' +
                              ' a drain and a magic missile')
-                self.cast_drain(battle, o)
+                self.cast_drain(o)
 
             # Normal endless game optimal strategy
 
-            elif (self.mana_to_spend(battle) < 173 and
-                    battle.effect_is_active('Recharge', self) is False):
-                self.cast_recharge(battle, o)
-            elif (self.mana_to_spend(battle) >= 113 and
-                    battle.effect_is_active('Shield', self) is False):
-                self.cast_shield(battle, o)
-            elif (self.mana_to_spend(battle) >= 173 and
-                    battle.effect_is_active('Poison', o) is False):
-                self.cast_poison(battle, o)
-            elif (self.mana_to_spend(battle) >= 73 and
-                    self.health < (9 - self.get_armor(battle))):
-                self.cast_drain(battle, o)
-            elif self.mana_to_spend(battle) >= 53:
-                self.cast_magic_missile(battle, o)
+            elif (self.mana_to_spend() < 173 and
+                    self.ongoing_battle.effect_is_active('Recharge', self)
+                    is False):
+                self.cast_recharge(o)
+            elif (self.mana_to_spend() >= 173 and
+                    self.ongoing_battle.effect_is_active('Poison', o)
+                    is False):
+                self.cast_poison(o)
+            elif (self.mana_to_spend() >= 113 and
+                    self.ongoing_battle.effect_is_active('Shield', self)
+                    is False):
+                self.cast_shield(o)
+            elif (self.mana_to_spend() >= 73 and
+                    self.health < (9 - self.get_armor())):
+                self.cast_drain(o)
+            elif self.mana_to_spend() >= 53:
+                self.cast_magic_missile(o)
             else:
-                battle.winner = o
+                self.ongoing_battle.winner = o
                 logger.info(unicode(self) +
                             ' can make no action and has lost.')
         else:
             logger.warning(unicode(self) + u' has no attack resources!')
 
-    def cast_magic_missile(self, battle, opponent):
+    def cast_magic_missile(self, opponent):
         # Cast Magic Missile (53 mana, 4 damage) (13,25 MPD, 4 DPT)
         if self.spend_mana(53):
             logger.debug(unicode(self) + ' casts magic missile')
@@ -154,18 +159,18 @@ class Actor(object):
                          ' fails!')
             return False
 
-    def cast_recharge(self, battle, opponent):
+    def cast_recharge(self, opponent):
         # Cast Effect:Recharge (229 mana, 5 turns, gain 101 mana)
         if self.spend_mana(229):
             logger.debug(unicode(self) + ' casts recharge')
             e = Effect('Recharge', self, 5, 0, 101)
-            battle.effects.append(e)
+            self.ongoing_battle.effects.append(e)
             return True
         else:
             logger.debug(unicode(self) + ' tries to cast recharge but fails!')
             return False
 
-    def cast_drain(self, battle, opponent):
+    def cast_drain(self, opponent):
         # Cast Drain (73 mana, 2 damage, 2 health to self) (36,5 MPD, 2 DPT)
         if self.spend_mana(73):
             logger.debug(unicode(self) + ' casts drain')
@@ -176,23 +181,23 @@ class Actor(object):
             logger.debug(unicode(self) + ' tries to cast drain but fails!')
             return False
 
-    def cast_shield(self, battle, opponent):
+    def cast_shield(self, opponent):
         # Cast Effect:Shield (113 mana, 6 turns, armor increased by 7)
         if self.spend_mana(113):
             logger.debug(unicode(self) + ' casts shield')
             e = Effect('Shield', self, 6, 0, 0)
-            battle.effects.append(e)
+            self.ongoing_battle.effects.append(e)
             return True
         else:
             logger.debug(unicode(self) + ' tries to cast shield but fails!')
             return False
 
-    def cast_poison(self, battle, opponent):
+    def cast_poison(self, opponent):
         # Cast Effect:Poison (173, 6 turns, 3 damage) (9,61 MPD, 3 DPT)
         if self.spend_mana(173):
             logger.debug(unicode(self) + ' casts poison')
             e = Effect('Poison', opponent, 6, -3, 0)
-            battle.effects.append(e)
+            self.ongoing_battle.effects.append(e)
             return True
         else:
             logger.debug(unicode(self) + ' tries to cast poison but fails!')
@@ -228,9 +233,10 @@ class Effect(object):
 
 class Battle(object):
 
-    def __init__(self, actors):
+    def __init__(self, actors, difficulty):
         self.actors = actors
         self.remaining_actors = self.actors
+        self.difficulty = difficulty
         self.effects = []
         self.winner = None
         for a in actors:
@@ -262,19 +268,23 @@ class Battle(object):
 
     def to_death(self):
 
-        logger.info(u'Starting a battle')
+        logger.info(u'Starting a battle on %s difficulty.' % self.difficulty)
         logger.info(u'Actors:')
         for a in self.actors:
             logger.info(unicode(a))
-        logger.info(u'Turns:')
+        logger.info(u'Turns: (debug level only)')
 
         self.remaining_actors = self.actors
 
         while self.winner is None:
             for a in self.remaining_actors:
+                if self.difficulty == 'hard':
+                    if a.name == 'Player':
+                        logger.debug('Player loses 1 hp from hard difficulty')
+                        a.health -= 1
                 self.apply_effects()     # Apply all active effects
                 if self.check_actors():  # See if someone died from effects
-                    a.attack(self)       # Attack if still alive
+                    a.attack()       # Attack if still alive
                 self.check_actors()      # See if someone died from attacks
 
         logger.info(u'Winner: %s, mana spent: %s' % (
@@ -298,12 +308,20 @@ def testcase_melee():
     return battle.to_death()
 
 
-def testcase_spellcasting():
+def spellcasting_part1():
     player = Actor('Player', 50, 0, 0, 500)
     boss = get_actor_from_file('day22input.txt', 'Boss')
-    battle = Battle([player, boss])
+    battle = Battle([player, boss], difficulty='normal')
+    return battle.to_death()
+
+
+def spellcasting_part2():
+    player = Actor('Player', 50, 0, 0, 500)
+    boss = get_actor_from_file('day22input.txt', 'Boss')
+    battle = Battle([player, boss], difficulty='hard')
     return battle.to_death()
 
 
 # print testcase_melee()
-print testcase_spellcasting()
+spellcasting_part1()
+spellcasting_part2()
