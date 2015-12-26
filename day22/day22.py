@@ -2,7 +2,7 @@ import math
 import logging
 import re
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
 
@@ -17,6 +17,7 @@ class Actor(object):
         self.mana = int(mana)
         self.mana_spent = 0
         self.ongoing_battle = None
+        self.finisher = False
 
     def __unicode__(self):
         if self.ongoing_battle is not None:
@@ -60,6 +61,23 @@ class Actor(object):
             incoming += 3 * min([turns, e.duration])
         return incoming
 
+    def get_opponent(self):
+        return [r for r in self.ongoing_battle.remaining_actors
+                if r != self][0]
+
+    def expected_damage(self, turns):
+        o = self.get_opponent()
+        dmg_dealt_by_opponent = turns * o.damage
+        mitigated_by_shield_in_turns = sum(
+            [self.get_armor(i) for i in xrange(2, turns) if i % 2 != 0])
+        incoming_dmg_from_dots = self.incoming_damage(turns)
+        return (dmg_dealt_by_opponent - mitigated_by_shield_in_turns +
+                incoming_dmg_from_dots)
+
+    def burst_turns_to_win(self):
+        o = self.get_opponent()
+        return 0
+
     def get_armor(self, at_future_turn=None):
         e = self.ongoing_battle.effect_is_active('Shield', self)
         if e is not False:
@@ -73,7 +91,8 @@ class Actor(object):
         return self.armor
 
     def attack(self):
-        o = [r for r in self.ongoing_battle.remaining_actors if r != self][0]
+
+        o = self.get_opponent()
 
         if self.damage > 0:
             damage = max([0, self.damage - o.get_armor()])
@@ -83,44 +102,26 @@ class Actor(object):
 
         elif self.mana > 0:
 
-            logger.debug(u'Deciding what to do to %s' % o)
-
             # Try to finish the boss quickly in the late game with a series of
             # magic missiles
 
-            conseq_mms_to_win = int(math.ceil((o.health - o.incoming_damage(6)
-                                               )/4))
+            conseq_mms_to_win = max(
+                [int(math.ceil((o.health -
+                 o.incoming_damage(6))/4)), 0])
             incoming_damage_during_conseq_mms = (
-                conseq_mms_to_win * o.damage - sum([self.get_armor(i)
-                                                    for i in xrange(
-                                                        conseq_mms_to_win)
-                                                    if i % 2 != 0]))
+                self.expected_damage(conseq_mms_to_win))
+
+            logger.debug(u'%s is deciding what to do to %s, inc_dmg: %s' %
+                         (self, o, incoming_damage_during_conseq_mms))
 
             if (self.mana >= (conseq_mms_to_win * 53) and
                     self.health > incoming_damage_during_conseq_mms):
                 logger.debug('Trying to finish off with %s magic missiles' %
                              (int(conseq_mms_to_win)+1))
-                self.cast_magic_missile(o)
+                self.finisher = True
 
-            # Quickest way to do damage over 1 turn:
-            elif (self.mana >= 53 and o.health <= (
-                    4 + o.incoming_damage(1))):
-                logger.debug('Trying to finish boss off with a magic missile')
+            if self.finisher is True:
                 self.cast_magic_missile(o)
-
-            # Quickest way to do damage over 2 turns:
-            elif (self.mana >= 106 and o.health <= (
-                    8 + o.incoming_damage(3)) and
-                    (self.health + self.get_armor(2) > 9)):
-                logger.debug('Trying to finish boss off in two turns with' +
-                             ' two magic missiles')
-                self.cast_magic_missile(o)
-            elif (self.mana >= 126 and o.health <= (
-                    6 + o.incoming_damage(3)) and
-                    (self.health + self.get_armor(2) > 7)):
-                logger.debug('Trying to finish boss off in two turns with' +
-                             ' a drain and a magic missile')
-                self.cast_drain(o)
 
             # Normal endless game optimal strategy
 
@@ -280,11 +281,12 @@ class Battle(object):
             for a in self.remaining_actors:
                 if self.difficulty == 'hard':
                     if a.name == 'Player':
-                        logger.debug('Player loses 1 hp from hard difficulty')
+                        logger.debug('The curse of hard difficulty deals 1' +
+                                     ' damage to the player.')
                         a.health -= 1
                 self.apply_effects()     # Apply all active effects
                 if self.check_actors():  # See if someone died from effects
-                    a.attack()       # Attack if still alive
+                    a.attack()           # Attack if still alive
                 self.check_actors()      # See if someone died from attacks
 
         logger.info(u'Winner: %s, mana spent: %s' % (
@@ -324,4 +326,4 @@ def spellcasting_part2():
 
 # print testcase_melee()
 spellcasting_part1()
-spellcasting_part2()
+# spellcasting_part2()
