@@ -326,4 +326,4 @@ def spellcasting_part2():
 
 # print testcase_melee()
 spellcasting_part1()
-# spellcasting_part2()
+spellcasting_part2()
