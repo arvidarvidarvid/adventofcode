@@ -43,12 +43,9 @@ def get_groups(packages, number_of_groups):
 
 
 def find_smalles_qe(valid_combinations):
-    min_qe = None
-    for c in valid_combinations:
-        _qe = np.prod(c[0])
-        if _qe < min_qe or min_qe is None:
-            min_qe = _qe
-    return min_qe
+    qes = [np.prod(c[0]) for c in valid_combinations]
+    return min(qes)
+
 
 raw_packages = open('day24input.txt', 'r').read().split('\n')
 packages = [int(p) for p in raw_packages]
