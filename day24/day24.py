@@ -42,7 +42,7 @@ def get_groups(packages, number_of_groups):
     return valid_combinations
 
 
-def find_smalles_qe(valid_combinations):
+def find_smallest_qe(valid_combinations):
     qes = [np.prod(c[0]) for c in valid_combinations]
     return min(qes)
 
@@ -52,8 +52,8 @@ packages = [int(p) for p in raw_packages]
 
 part1_valid_combinations = get_groups(packages, 3)
 print (u'Part 1: The smallest QE possible with three bags is %s' %
-       find_smalles_qe(part1_valid_combinations))
+       find_smallest_qe(part1_valid_combinations))
 
 part2_valid_combinations = get_groups(packages, 4)
 print (u'Part 2: The smallest QE possible with four bags is %s' %
-       find_smalles_qe(part2_valid_combinations))
+       find_smallest_qe(part2_valid_combinations))
