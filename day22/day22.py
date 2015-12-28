@@ -1,3 +1,9 @@
+"""
+The result for part 2 is incorrect - see day22v2.py for the correct solution. I
+did like this version better though, would like to finish it some day :)
+"""
+
+
 import math
 import logging
 import re
@@ -73,10 +79,6 @@ class Actor(object):
         incoming_dmg_from_dots = self.incoming_damage(turns)
         return (dmg_dealt_by_opponent - mitigated_by_shield_in_turns +
                 incoming_dmg_from_dots)
-
-    def burst_turns_to_win(self):
-        o = self.get_opponent()
-        return 0
 
     def get_armor(self, at_future_turn=None):
         e = self.ongoing_battle.effect_is_active('Shield', self)
