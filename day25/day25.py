@@ -1,6 +1,8 @@
 # I'm describing coordinates as (column, row), the puzzle input will therefore
 # need to be transposed
 
+import re
+
 
 def get_next_value(prev_value):
     return (prev_value * 252533) % 33554393
@@ -24,9 +26,6 @@ def populate_grid(grid):
     height = len(grid)
     width = len(grid[0])
 
-    print width
-    print height
-
     grid[0][0] = 20151125
 
     current_coords = (0, 1)
@@ -43,7 +42,8 @@ def populate_grid(grid):
 def part1():
     grid = [[None for i in range(0, 7000)] for i in range(0, 7000)]
     grid = populate_grid(grid)
-    print grid[3018][3009]
+    requested_coords = re.findall(r'\d+', open('day25input.txt').read())
+    return grid[int(requested_coords[1])-1][int(requested_coords[0])-1]
 
 
 def test():
@@ -52,5 +52,4 @@ def test():
     for c in grid:
         print c
 
-
-part1()
+print 'Part 1: The code at the requested coordinates is: %s' % part1()
