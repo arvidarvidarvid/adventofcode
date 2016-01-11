@@ -1,13 +1,26 @@
 from copy import deepcopy
 
-MAX_MANA_SPEND = 1500
+MAX_MANA_SPEND = 2000
 ROUNDS = 0
 actions = ['R', 'S', 'P', 'D', 'M']
+state_memo = {}
+
+
+def serialize_state(state):
+    return u''.join([
+        unicode(state['player']['health']),
+        unicode(state['player']['mana']),
+        unicode(state['boss']['health']),
+        unicode(state['recharge_charges']),
+        unicode(state['shield_turns']),
+        unicode(state['poison_charges']),
+        unicode(state['mana_spent'])
+        ])
 
 
 def get_min_mana(init_state, difficulty_hard=False):
     global MAX_MANA_SPEND
-    MAX_MANA_SPEND = 1500
+    MAX_MANA_SPEND = 2000
     state = init_state
     if difficulty_hard is True:
         state['difficulty'] = 'hard'
@@ -19,6 +32,10 @@ def get_min_mana(init_state, difficulty_hard=False):
 def get_mana_spent_for_win(state, next_action):
 
     global MAX_MANA_SPEND
+
+    serialized_state = serialize_state(state)
+    if serialized_state in state_memo:
+        return state_memo[serialized_state]
 
     _state = deepcopy(state)
 
@@ -130,7 +147,10 @@ def get_mana_spent_for_win(state, next_action):
     if _state['player']['health'] < 1:
         return 99999
     else:
-        return min([get_mana_spent_for_win(_state, a) for a in actions])
+        best_spend = min([get_mana_spent_for_win(_state, a) for a in actions])
+        new_serialized_state = serialize_state(_state)
+        state_memo[new_serialized_state] = best_spend
+        return best_spend
 
 
 init_state = {
@@ -139,8 +159,8 @@ init_state = {
         'damage': 0,
         'mana': 500},
     'boss': {
-        'health': 51,
-        'damage': 9,
+        'health': 71,
+        'damage': 10,
         'mana': 0},
     'recharge_charges': 0,
     'shield_turns': 0,

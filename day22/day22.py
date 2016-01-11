@@ -8,7 +8,7 @@ import math
 import logging
 import re
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
