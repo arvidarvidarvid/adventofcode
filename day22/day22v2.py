@@ -8,15 +8,33 @@ class Battle(object):
     def __init__(self, init_state, difficulty='normal'):
         self.init_state = init_state
         self.init_state['difficulty'] = difficulty
+        self.difficulty = difficulty
         self.max_mana_spend = 2000
         self.state_memo = dict()
         self.winning_attack_sequences = list()
+        self.least_spend = None
 
     def get_min_mana(self):
-        least_spend = min([get_mana_spent_for_win(
+        self.least_spend = min([get_mana_spent_for_win(
             self, self.init_state, a) for a in self.ACTIONS])
-        return (least_spend,
-                sorted(self.winning_attack_sequences, key=lambda x: x[1]))
+        self.winning_attack_sequences.sort(key=lambda x: x[1])
+        return True
+
+    def print_result(self):
+        print ('The least amount of mana that can beat the boss on %s'
+               % self.difficulty + ' difficulty is %s with the sequence %s' %
+               (self.least_spend, self.winning_attack_sequences[0][0]))
+
+
+def is_boss_dead(battle, state):
+    if state['boss']['health'] < 1:
+        if battle.max_mana_spend > state['mana_spent']:
+            battle.max_mana_spend = state['mana_spent']
+        battle.winning_attack_sequences.append(
+            (state['attack_sequence'], state['mana_spent']))
+        return True
+    else:
+        return False
 
 
 def serialize_state(state):
@@ -105,11 +123,7 @@ def get_mana_spent_for_win(battle, state, next_action):
 
     # Check for boss death
 
-    if _state['boss']['health'] < 1:
-        if battle.max_mana_spend > _state['mana_spent']:
-            battle.max_mana_spend = _state['mana_spent']
-        battle.winning_attack_sequences.append(
-            (_state['attack_sequence'], _state['mana_spent']))
+    if is_boss_dead(battle, _state) is True:
         return _state['mana_spent']
 
     # BOSS TURN
@@ -132,11 +146,7 @@ def get_mana_spent_for_win(battle, state, next_action):
 
     # Check for boss death
 
-    if _state['boss']['health'] < 1:
-        if battle.max_mana_spend > _state['mana_spent']:
-            battle.max_mana_spend = _state['mana_spent']
-        battle.winning_attack_sequences.append(
-            (_state['attack_sequence'], _state['mana_spent']))
+    if is_boss_dead(battle, _state) is True:
         return _state['mana_spent']
 
     # Boss Action
@@ -176,11 +186,9 @@ init_state = {
 }
 
 p1_battle = Battle(init_state, difficulty='normal')
-part1 = p1_battle.get_min_mana()
-print ('Part 1: The least amount of mana that can beat the boss on normal ' +
-       'difficulty is %s with the sequence %s' % (part1[0], part1[1][0][0]))
+p1_battle.get_min_mana()
+p1_battle.print_result()
 
 p2_battle = Battle(init_state, difficulty='hard')
-part2 = p2_battle.get_min_mana()
-print ('Part 1: The least amount of mana that can beat the boss on hard ' +
-       'difficulty is %s with the sequence %s' % (part2[0], part2[1][0][0]))
+p2_battle.get_min_mana()
+p2_battle.print_result()
