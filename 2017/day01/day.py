@@ -16,20 +16,19 @@ def get_test_input():
 
 def main():
 
-    input = get_input()
+    input = [int(i) for i in get_input()]
     double_input = input + input
 
-    sum_1 = 0
-    sum_2 = 0
+    captcha = [0, 0]
 
-    for i, val in tqdm(enumerate(input)):
-        if int(val) == int(input[i - 1]):
-            sum_1 += int(input[i - 1])
-        if int(val) == int(double_input[int(i + len(input) / 2)]):
-            sum_2 += int(val)
+    for i, val in tqdm.tqdm(enumerate(input)):
+        if val == input[i - 1]:
+            captcha[0] += input[i - 1]
+        if val == double_input[int(i + len(input) / 2)]:
+            captcha[1] += val
 
-    logger.info('Result 1: %s' % sum_1)
-    logger.info('Result 2: %s' % sum_2)
+    logger.info('Result 1: %i' % captcha[0])
+    logger.info('Result 2: %i' % captcha[1])
 
 
 if __name__ == '__main__':
