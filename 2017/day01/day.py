@@ -17,7 +17,6 @@ def get_test_input():
 def main():
 
     input = get_input()
-    input = input
     double_input = input + input
 
     sum_1 = 0
