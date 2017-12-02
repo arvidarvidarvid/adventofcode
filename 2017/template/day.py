@@ -17,6 +17,9 @@ def get_input():
 
 
 def main():
+
+    input = get_input()
+
     logger.info('Result 1')
     logger.info('Result 2')
 
