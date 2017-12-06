@@ -22,7 +22,7 @@ def get_grid(part=1):
         ]
 
 
-def get_code(instructions, grid, start_coords=(1,1)):
+def get_code(instructions, grid, start_coords=(1, 1)):
 
     y = start_coords[0]
     x = start_coords[1]
@@ -37,13 +37,13 @@ def get_code(instructions, grid, start_coords=(1,1)):
             prev_x = x
 
             if instruction == 'U':
-                y = y-1
+                y = y - 1
             elif instruction == 'D':
-                y = y+1
+                y = y + 1
             elif instruction == 'L':
-                x = x-1
+                x = x - 1
             elif instruction == 'R':
-                x = x+1
+                x = x + 1
 
             try:
                 if grid[y][x] is not None and y >= 0 and x >= 0:
@@ -62,8 +62,8 @@ def get_code(instructions, grid, start_coords=(1,1)):
 
 def main():
     instructions = get_instructions('2.txt')
-    print(get_code(instructions, get_grid(1), (1,1)))
-    print(get_code(instructions, get_grid(2), (2,0)))
+    print(get_code(instructions, get_grid(1), (1, 1)))
+    print(get_code(instructions, get_grid(2), (2, 0)))
 
 
 if __name__ == '__main__':

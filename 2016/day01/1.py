@@ -46,10 +46,10 @@ def follow_instructions(instructions):
         turn_direction = i[0]
         distance = int(i[1:])
 
-        current_direction = get_new_direction(current_direction, turn_direction)
-        previous_position = deepcopy(current_position)
+        current_direction = get_new_direction(current_direction,
+                                              turn_direction)
 
-        for m in range(1, distance+1):
+        for m in range(1, distance + 1):
 
             if current_direction == 'N':
                 current_position[0] = current_position[0] + 1
