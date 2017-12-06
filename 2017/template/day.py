@@ -16,6 +16,10 @@ def get_input():
         return file.read()
 
 
+def test():
+    logger.info('Tests passed')
+
+
 def main():
 
     input = get_input()
@@ -25,5 +29,5 @@ def main():
 
 
 if __name__ == '__main__':
-
+    test()
     main()
