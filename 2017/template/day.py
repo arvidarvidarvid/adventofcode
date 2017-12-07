@@ -11,9 +11,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
-def get_input():
-    with open('day.input', 'r') as file:
-        return file.read()
+def get_input(filename='day.input'):
+    with open(filename, 'r') as file:
+        return [line.strip() for line in file.readlines()]
 
 
 def test():
