@@ -42,22 +42,20 @@ class Memory(object):
     def largest_registry(self):
         return max([v for k, v in self.registers.items()])
 
+    def apply_instructions(self, instructions):
+        for i in instructions:
+            self.apply_instruction(i)
 
-def apply_instructions(memory, instructions):
-    for i in instructions:
-        apply_instruction(memory, i)
-
-
-def apply_instruction(memory, instruction):
-    reg, fun, delta, _, c_reg, c_comp, c_val = instruction.strip().split()
-    if memory.evaluate_condition(c_reg, c_comp, c_val):
-        memory.alter_register_value(reg, fun, delta)
+    def apply_instruction(self, instruction):
+        reg, fun, delta, _, c_reg, c_comp, c_val = instruction.strip().split()
+        if self.evaluate_condition(c_reg, c_comp, c_val):
+            self.alter_register_value(reg, fun, delta)
 
 
 def test():
     test_input = get_input('test.input')
     memory = Memory()
-    apply_instructions(memory, test_input)
+    memory.apply_instructions(test_input)
     assert memory.largest_registry() == 1
     logger.info('Tests passed')
 
@@ -66,7 +64,7 @@ def main():
 
     input = get_input()
     memory = Memory()
-    apply_instructions(memory, input)
+    memory.apply_instructions(input)
 
     logger.info('Result 1: %s' % memory.largest_registry())
     logger.info('Result 2: %s' % memory.global_max)
