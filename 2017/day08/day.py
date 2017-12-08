@@ -36,7 +36,8 @@ class Memory(object):
     def evaluate_condition(self, register, comp, threshold):
         register_value = self.get_or_create_register(register)
         threshold = int(threshold)
-        return eval('%s %s %s' % (register_value, comp, threshold))
+        if comp in ('<', '>', '<=', '>=', '==', '!='):
+            return eval('%s %s %s' % (register_value, comp, threshold))
 
     def largest_registry(self):
         return max([v for k, v in self.registers.items()])
