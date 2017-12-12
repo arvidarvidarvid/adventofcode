@@ -1,4 +1,5 @@
 import tqdm
+from copy import deepcopy
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -11,21 +12,26 @@ def get_input(filename='day.input'):
 
 
 def pipe_set(inputs):
-    connections = []
+    connections = {}
     for input in inputs:
         source, destinations = input.split('<->')
         source = int(source.strip())
         destinations = [int(d.strip()) for d in destinations.split(',')]
-        connections.append([source] + destinations)
+        if source not in connections:
+            connections[source] = []
+        for d in destinations:
+            if d not in connections[source]:
+                connections[source].append(d)
     return connections
 
 
-def get_connected_to(pipes, node):
-    connected = [node]
-    for i in [1, 2]:
-        for pipe in pipes:
-            if pipe[0] in connected:
-                connected += pipe
+def get_connected_to(pipes, node, seen=[]):
+    connected = []
+    new_seen = list(set(deepcopy(seen) + pipes[node]))
+    for n in pipes[node]:
+        if n not in seen:
+            connected += get_connected_to(pipes, n, new_seen)
+            connected.append(n)
     return sorted(list(set(connected)))
 
 
@@ -35,8 +41,11 @@ def get_groups(input):
     pipes = pipe_set(input)
     for i in tqdm.tqdm(range(0, len(input))):
         g = get_connected_to(pipes, i)
-        if g[0] not in flat:
-            flat = list(set(flat + g))
+        unique = True
+        if g[0] in flat:
+            unique = False
+        if unique:
+            flat += g
             groups += 1
     return groups
 
