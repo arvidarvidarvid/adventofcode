@@ -28,8 +28,8 @@ def main():
 
     input = get_input()
 
-    logger.info('Result 1')
-    logger.info('Result 2')
+    logger.info('Result 1: %s' % '')
+    logger.info('Result 2: %s' % '')
 
 
 if __name__ == '__main__':
