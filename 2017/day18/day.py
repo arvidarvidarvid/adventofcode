@@ -12,156 +12,130 @@ def get_input(filename='day.input'):
 
 class MusicBox():
 
-    def __init__(self, instructions, pid):
+    def __init__(self, instructions, pid, part):
 
-        # State
+        self.part = part
         self.pid = pid
         self.registers = {'p': pid}
         self.instructions = instructions
         self.next_instruction = 0
 
-        # Exit conditions
         self.waiting = False
         self.terminated = False
 
-        # Part one parameters
         self.latest_sound = None
-        self.part_1_return = None
+        self.recovered_frequency = None
 
-        # Part two parameters
         self.partner_box = None
         self.received_queue = []
         self.total_sends = 0
 
-    def set_partner_box(self, box):
-        self.partner_box = box
+    def get_register_value(self, reference):
+        if reference not in self.registers:
+            self.registers[reference] = 0
+        return self.registers[reference]
+
+    def set_register_value(self, reference, value):
+        self.registers[reference] = value
 
     def receive(self, value):
         self.received_queue.append(value)
 
-    def send(self, value):
-        self.partner_box.receive(value)
-        self.total_sends += 1
-
-    def register_value(self, x, value=None):
-        if value is None:
-            if x in self.registers:
-                return self.registers[x]
-            else:
-                self.registers[x] = 0
-                return self.register_value(x)
-        else:
-            self.register_value(x)
-            self.registers[x] = int(value)
-            return self.register_value(x)
-
-    def run_instructions(self):
-        total = 0
-        while self.part_1_return is None and total < 10000000:
-            self.tick()
-            total += 1
-        return self.part_1_return
+    def reference_to_integer(self, reference):
+        try:
+            value = int(reference)
+        except ValueError:
+            value = self.get_register_value(reference)
+        return value
 
     def tick(self):
 
+        if self.next_instruction not in range(0, len(self.instructions)):
+            self.terminated = True
         if self.terminated:
             return 'Terminated'
 
-        if self.next_instruction not in range(0, len(self.instructions)):
-            print('terminating')
-            self.terminated = True
-            return False
+        instruction, x, y = re.match(r'(.{3}) (.{1})\s*([a-z0-9\-]*)',
+                                     self.instructions[self.next_instruction]
+                                     ).groups()
 
-        gs = re.match(r'(.{3}) (.{1})\s*([a-z0-9\-]*)',
-                      self.instructions[self.next_instruction]).groups()
-
-        instruction = gs[0]
-
-        x = gs[1]
-        try:
-            x_val = int(gs[1])
-        except ValueError:
-            x_val = self.register_value(gs[1])
-
-        if gs[2] != '':
-            try:
-                y_val = int(gs[2])
-            except ValueError:
-                y_val = self.register_value(gs[2])
+        x_val = self.reference_to_integer(x)
+        y_val = self.reference_to_integer(y)
 
         if instruction == 'snd':
-            if self.partner_box is None:
+            if self.part == 1:
                 self.latest_sound = x_val
             else:
-                self.send(x_val)
+                self.partner_box.receive(x_val)
+                self.total_sends += 1
 
         elif instruction == 'set':
-            self.register_value(x, y_val)
+            self.set_register_value(x, y_val)
 
         elif instruction == 'add':
-            self.register_value(x, x_val + y_val)
+            self.set_register_value(x, x_val + y_val)
 
         elif instruction == 'mul':
-            self.register_value(x, x_val * y_val)
+            self.set_register_value(x, x_val * y_val)
 
         elif instruction == 'mod':
-            self.register_value(x, x_val % y_val)
+            self.set_register_value(x, x_val % y_val)
 
         elif instruction == 'rcv':
-            if self.partner_box is None:
+            if self.part == 1:
                 if x_val != 0:
-                    self.part_1_return = self.latest_sound
+                    self.recovered_frequency = self.latest_sound
             else:
                 if len(self.received_queue) > 0:
-                    self.register_value(x, self.received_queue.pop(0))
+                    value = self.received_queue.pop(0)
+                    self.set_register_value(x, value)
                     self.waiting = False
                 else:
                     self.waiting = True
                     return 'Waiting to receive'
 
         elif instruction == 'jgz':
-            if x_val != 0:
+            if x_val > 0:
                 self.next_instruction += int(y_val)
                 return 'Jumping'
 
         self.next_instruction += 1
 
 
-def dueling_music_boxes(input):
-    b0 = MusicBox(input, pid=0)
-    b1 = MusicBox(input, pid=1)
-    b0.set_partner_box(b1)
-    b1.set_partner_box(b0)
+def recover_frequency(box):
+    while box.recovered_frequency is None:
+        box.tick()
+    return box.recovered_frequency
 
-    while (not (b0.waiting or b0.terminated) or
-           not (b1.waiting or b1.terminated)) and b1.total_sends < 11122:
+
+def sends_before_deadlock(input):
+    b0 = MusicBox(input, pid=0, part=2)
+    b1 = MusicBox(input, pid=1, part=2)
+    b0.partner_box = b1
+    b1.partner_box = b0
+
+    while not ((b0.waiting or b0.terminated) and
+               (b1.waiting or b1.terminated)):
         b0.tick()
         b1.tick()
 
-    print(b0.total_sends, len(b0.received_queue))
-    print(b1.total_sends, len(b1.received_queue))
-
-    if b1.total_sends == 11122:
-        return 'Failed'
-    else:
-        return b1.total_sends
+    return b1.total_sends
 
 
 def test():
     test_input_1 = get_input('test.input')
     test_input_2 = get_input('test2.input')
-    mb = MusicBox(test_input_1, pid=0)
-    assert mb.run_instructions() == 4
-    assert dueling_music_boxes(test_input_2) == 3
+    mb = MusicBox(test_input_1, pid=0, part=1)
+    assert recover_frequency(mb) == 4
+    assert sends_before_deadlock(test_input_2) == 3
     logger.info('Tests passed')
 
 
 def main():
-
     input = get_input()
-    mb = MusicBox(input, pid=0)
-    logger.info('Result 1: %s' % mb.run_instructions())
-    logger.info('Result 2: %s' % dueling_music_boxes(input))
+    mb = MusicBox(input, pid=0, part=1)
+    logger.info('Result 1: %s' % recover_frequency(mb))
+    logger.info('Result 2: %s' % sends_before_deadlock(input))
 
 
 if __name__ == '__main__':
