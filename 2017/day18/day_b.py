@@ -24,100 +24,77 @@ class MusicBox():
         self.waiting = False
         self.terminated = False
 
-        # Part one parameters
-        self.latest_sound = None
-        self.part_1_return = None
-
         # Part two parameters
         self.partner_box = None
         self.received_queue = []
         self.total_sends = 0
 
-    def set_partner_box(self, box):
-        self.partner_box = box
-
     def receive(self, value):
         self.received_queue.append(value)
 
-    def send(self, value):
-        self.partner_box.receive(value)
-        self.total_sends += 1
+    def get_register_value(self, x):
+        if x not in self.registers:
+            self.registers[x] = 0
+        return self.registers[x]
 
-    def register_value(self, x, value=None):
-        if value is None:
-            if x in self.registers:
-                return self.registers[x]
-            else:
-                self.registers[x] = 0
-                return self.register_value(x)
-        else:
-            self.register_value(x)
-            self.registers[x] = int(value)
-            return self.register_value(x)
-
-    def run_instructions(self):
-        total = 0
-        while self.part_1_return is None and total < 10000000:
-            self.tick()
-            total += 1
-        return self.part_1_return
+    def set_register_value(self, x, value):
+        self.registers[x] = int(value)
 
     def tick(self):
 
+        # Check if the program has already terminated or should terminate. If
+        # terminated, do not process the instruction but return.
+        if self.next_instruction not in range(0, len(self.instructions)):
+            self.terminated = True
         if self.terminated:
             return 'Terminated'
 
-        if self.next_instruction not in range(0, len(self.instructions)):
-            print('terminating')
-            self.terminated = True
-            return False
-
+        # Find the parts of the instruction. The function call, the one
+        # mandatory parameter and the one optional.
         gs = re.match(r'(.{3}) (.{1})\s*([a-z0-9\-]*)',
                       self.instructions[self.next_instruction]).groups()
 
+        # Put the function call name in the instruction variable
         instruction = gs[0]
 
+        # Check if the first parameter is a numerical value or a register
+        # reference. If so, look up the underlying value and store in x_val.
         x = gs[1]
         try:
             x_val = int(gs[1])
         except ValueError:
-            x_val = self.register_value(gs[1])
+            x_val = self.get_register_value(gs[1])
 
+        # Do the same thing for the second parameter if there is one.
         if gs[2] != '':
             try:
                 y_val = int(gs[2])
             except ValueError:
-                y_val = self.register_value(gs[2])
+                y_val = self.get_register_value(gs[2])
 
         if instruction == 'snd':
-            if self.partner_box is None:
-                self.latest_sound = x_val
-            else:
-                self.send(x_val)
+            self.partner_box.receive(x_val)
+            self.total_sends += 1
 
         elif instruction == 'set':
-            self.register_value(x, y_val)
+            self.set_register_value(x, y_val)
 
         elif instruction == 'add':
-            self.register_value(x, x_val + y_val)
+            self.set_register_value(x, x_val + y_val)
 
         elif instruction == 'mul':
-            self.register_value(x, x_val * y_val)
+            self.set_register_value(x, x_val * y_val)
 
         elif instruction == 'mod':
-            self.register_value(x, x_val % y_val)
+            self.set_register_value(x, x_val % y_val)
 
         elif instruction == 'rcv':
-            if self.partner_box is None:
-                if x_val != 0:
-                    self.part_1_return = self.latest_sound
+            if len(self.received_queue) > 0:
+                self.set_register_value(x, self.received_queue.pop(0))
+                self.waiting = False
             else:
-                if len(self.received_queue) > 0:
-                    self.register_value(x, self.received_queue.pop(0))
-                    self.waiting = False
-                else:
-                    self.waiting = True
-                    return 'Waiting to receive'
+                self.waiting = True
+                return 'Waiting to receive'
 
         elif instruction == 'jgz':
             if x_val != 0:
@@ -128,19 +105,33 @@ class MusicBox():
 
 
 def dueling_music_boxes(input):
+
+    # Create two boxes and assign them both to be eachothers partners.
     b0 = MusicBox(input, pid=0)
     b1 = MusicBox(input, pid=1)
-    b0.set_partner_box(b1)
-    b1.set_partner_box(b0)
+    b0.partner_box = b1
+    b1.partner_box = b0
 
+    ticks = 0
+
+    # For each of the two programs: if waiting or terminated is True the
+    # program is halted unless the other program makes a move. If both programs
+    # are either waiting or terminated no program can move and therefore the
+    # loop can end.
+    # 11122 is a known too high value and I kill the loop to not get stuck.
     while (not (b0.waiting or b0.terminated) or
            not (b1.waiting or b1.terminated)) and b1.total_sends < 11122:
+        # Each iteration ticks both programs one time, this means that the
+        # program will try to process the next iteration in line.
         b0.tick()
         b1.tick()
 
-    print(b0.total_sends, len(b0.received_queue))
-    print(b1.total_sends, len(b1.received_queue))
+        # Progress debug
+        if ticks % 10000 == 0:
+            print(ticks)
+        ticks += 1
 
+    # Limit to not run forever, 11122 is a known too high value
     if b1.total_sends == 11122:
         return 'Failed'
     else:
@@ -148,19 +139,13 @@ def dueling_music_boxes(input):
 
 
 def test():
-    test_input_1 = get_input('test.input')
     test_input_2 = get_input('test2.input')
-    mb = MusicBox(test_input_1, pid=0)
-    assert mb.run_instructions() == 4
     assert dueling_music_boxes(test_input_2) == 3
     logger.info('Tests passed')
 
 
 def main():
-
     input = get_input()
-    mb = MusicBox(input, pid=0)
-    logger.info('Result 1: %s' % mb.run_instructions())
     logger.info('Result 2: %s' % dueling_music_boxes(input))
 
 
