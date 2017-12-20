@@ -30,8 +30,8 @@ class Particle(object):
         return list(map(sum, zip(self.velocity, self.acceleration)))
 
     def velocity_away_from_origin(self):
-        next = self.get_next_position()
-        return self.distance_to_origin(next) - self.distance_to_origin()
+        return (self.distance_to_origin(self.get_next_position()) -
+                self.distance_to_origin())
 
     def total_acceleration(self):
         return sum(map(abs, self.acceleration))
@@ -47,9 +47,9 @@ def get_particles(input):
     for id, row in enumerate(input):
         p, v, a = re.match(r'p=<(.+)>, v=<(.+)>, a=<(.+)>', row).groups()
         particles.append(Particle(id,
-                                  [int(c.strip()) for c in p.split(',')],
-                                  [int(c.strip()) for c in v.split(',')],
-                                  [int(c.strip()) for c in a.split(',')]))
+                                  p=[int(c.strip()) for c in p.split(',')],
+                                  v=[int(c.strip()) for c in v.split(',')],
+                                  a=[int(c.strip()) for c in a.split(',')]))
     return particles
 
 
@@ -93,12 +93,14 @@ def resolve_collisions(particles):
         # can have 3+-way collisions that would not happen if we removed the
         # first two as they were found.
         to_be_removed = []
-        for particle in particles:
-            for potential_collider in particles:
-                if particle.id != potential_collider.id:
-                    if particle.position == potential_collider.position:
-                        to_be_removed.append(particle.id)
-                        to_be_removed.append(potential_collider.id)
+        resolved_positions = []
+        for i, particle in enumerate(particles):
+            if particle.position in resolved_positions:
+                continue
+            for potential_collider in particles[i + 1:]:
+                if particle.position == potential_collider.position:
+                    to_be_removed += [particle.id, potential_collider.id]
+            resolved_positions.append(particle.position)
         particles = [p for p in particles if p.id not in to_be_removed]
     # Return everyone that is now heading away from origin without having
     # collided.
