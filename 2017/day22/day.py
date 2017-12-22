@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+import unittest
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -92,12 +93,24 @@ def infections_in_bursts(input, bursts, part_a=True):
     return infections
 
 
-def test():
-    test_input = get_input('test.input')
-    assert infections_in_bursts(test_input, 70) == 41
-    assert infections_in_bursts(test_input, 10000) == 5587
-    assert infections_in_bursts(test_input, 100, part_a=False) == 26
-    logger.info('Tests passed')
+class TestsOfTheDay(unittest.TestCase):
+
+    def setUp(self):
+        self.input = get_input('test.input')
+
+    def test_part_a_70_bursts(self):
+        self.assertEqual(infections_in_bursts(self.input, 70), 41)
+
+    def test_part_a_10000_bursts(self):
+        self.assertEqual(infections_in_bursts(self.input, 10000), 5587)
+
+    def test_part_b_100_bursts(self):
+        self.assertEqual(infections_in_bursts(self.input, 100, part_a=False),
+                         26)
+
+    def test_part_b_10000000_bursts(self):
+        self.assertEqual(
+            infections_in_bursts(self.input, 10000000, part_a=False), 2511944)
 
 
 def main():
@@ -107,5 +120,6 @@ def main():
 
 
 if __name__ == '__main__':
-    test()
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestsOfTheDay)
+    unittest.TextTestRunner(verbosity=2).run(suite)
     main()
