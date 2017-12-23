@@ -1,0 +1,61 @@
+
+# Manual interpretation
+
+## Set up outside of loop
+
+set b 79
+set c b
+jnz a 2
+jnz 1 5
+mul b 100
+sub b -100000
+set c b
+sub c -17000
+
+a = 1
+b = 107900
+c = 124900
+
+# Outermost Loop
+
+  set f 1
+  set d 2 # d=2
+
+  # mid loop
+    set e 2 # e=2
+
+    # inner loop
+      1 set g d # g=2
+      2 mul g e # g=4
+      3 sub g b # g=4-b
+      4 jnz g 2
+      5 set f 0
+      6 sub e -1
+      7 set g e
+      8 sub g b
+      9 jnz g -8
+
+    10 sub d -1
+    11 set g d
+    12 sub g b
+
+  13 jnz g -13
+
+  if f == 0: h += 1
+  jnz f 2
+  sub h -1
+
+  if b == c: end, else b += 17
+  set g b
+  sub g c
+  jnz g 2
+  jnz 1 3
+  sub b -17
+
+jnz 1 -23
+
+
+# a is debug mode control
+# b and c are config level flow control defined outside the main loop
+# d, e, f, g are inner loop variables
+# h is the outer loop counter
