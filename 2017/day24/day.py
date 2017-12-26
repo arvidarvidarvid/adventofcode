@@ -38,6 +38,7 @@ class PortTree(object):
         _candidates = sorted([(port.length(), port.strength(self.raw_ports))
                               for port in self.leafs()], reverse=True)
         _longest_strongest = _candidates[0]
+        print(_longest_strongest)
         return _longest_strongest[1]
 
 
