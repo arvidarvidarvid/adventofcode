@@ -66,8 +66,13 @@ def replace_matrix(matrix, replacements):
     if matrix_as_tuple in KNOWN_VARIATIONS:
         variations = KNOWN_VARIATIONS[matrix_to_tuple(matrix)]
     else:
-        variations = [matrix, np.flipud(matrix), np.fliplr(matrix),
-                      np.rot90(matrix, 1), np.rot90(matrix, 3),
+        variations = [matrix,
+                      np.flipud(matrix),
+                      np.fliplr(matrix),
+                      np.flipud(np.fliplr(matrix)),
+                      np.fliplr(np.flipud(matrix)),
+                      np.rot90(matrix, 1),
+                      np.rot90(matrix, 3),
                       np.rot90(np.flipud(matrix), 1),
                       np.rot90(np.flipud(matrix), 3),
                       np.rot90(np.fliplr(matrix), 1),
