@@ -31,7 +31,7 @@ def get_reactive_pairs():
     for pair in tuple_pairs:
         reactive.append('{}{}'.format(pair[0], pair[1]))
 
-    return reactive
+    return set(reactive)
 
 
 def get_length_of_reduced(to_reduce):
