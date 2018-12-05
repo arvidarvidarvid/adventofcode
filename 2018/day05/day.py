@@ -6,7 +6,6 @@ import numpy as np
 import tqdm
 """
 from copy import deepcopy
-import re
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -49,7 +48,7 @@ def get_length_of_reduced(to_reduce):
                 if to_reduce[i] + to_reduce[i+1] in reactive:
                     to_reduce = to_reduce[:i] + to_reduce[i+2:]
                     reactant_present = True
-                    start_search_index = max(0, i-10)
+                    start_search_index = max(0, i-2)
                     break
 
     return len(to_reduce)
@@ -64,7 +63,6 @@ def p2(puzzle_input):
     reactive = get_reactive_pairs()
 
     shortest_seen = 1e6
-    best_removal = None
 
     for strip_char in reactive:
         stripped_input = deepcopy(puzzle_input).replace(
@@ -72,7 +70,6 @@ def p2(puzzle_input):
         _length = get_length_of_reduced(stripped_input)
         if _length < shortest_seen:
             shortest_seen = _length
-            best_removal = strip_char
 
     return shortest_seen
 
