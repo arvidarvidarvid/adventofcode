@@ -1,10 +1,3 @@
-"""
-from datetime import datetime, timedelta
-import itertools
-import math
-import numpy as np
-import tqdm
-"""
 from copy import deepcopy
 import logging
 
@@ -18,20 +11,12 @@ def get_input(filename='day.input'):
 
 
 def get_reactive_pairs():
-
-    ascii_upper = [chr(i) for i in range(65, 91)]
-    ascii_lower = [chr(i) for i in range(97, 123)]
-
-    tuple_pairs = []
-    tuple_pairs += list(zip(ascii_upper, ascii_lower))
-    tuple_pairs += list(zip(ascii_lower, ascii_upper))
-
-    reactive = []
-
-    for pair in tuple_pairs:
-        reactive.append('{}{}'.format(pair[0], pair[1]))
-
-    return set(reactive)
+    return set(['aA', 'Aa', 'bB', 'Bb', 'cC', 'Cc', 'dD', 'Dd', 'eE', 'Ee',
+                'fF', 'Ff', 'gG', 'Gg', 'hH', 'Hh', 'iI', 'Ii', 'jJ', 'Jj',
+                'kK', 'Kk', 'lL', 'Ll', 'mM', 'Mm', 'nN', 'Nn', 'oO', 'Oo',
+                'pP', 'Pp', 'qQ', 'Qq', 'rR', 'Rr', 'sS', 'Ss', 'tT', 'Tt',
+                'uU', 'Uu', 'vV', 'Vv', 'wW', 'Ww', 'xX', 'Xx', 'yY', 'Yy',
+                'zZ', 'Zz' ])
 
 
 def get_length_of_reduced(to_reduce):
