@@ -18,18 +18,27 @@ def get_input(filename='day.input'):
         return [line.strip() for line in file.readlines()]
 
 
+def p1(puzzle_input):
+    return None
+
+
+def p2(puzzle_input):
+    return None
+
+
 def test():
-    test_input = get_input('test.input')
-    assert True is True
+    test_input_p1 = get_input('test_p1.input')
+    assert p1(test_input_p1) == 123
+    assert p2(test_input_p1) == 'ABC'
     logger.info('Tests passed')
 
 
 def main():
 
-    input = get_input()
+    puzzle_input = get_input()
 
-    logger.info('Result 1: %s' % '')
-    logger.info('Result 2: %s' % '')
+    logger.info('Result 1: %s' % p1(puzzle_input))
+    logger.info('Result 2: %s' % p2(puzzle_input))
 
 
 if __name__ == '__main__':

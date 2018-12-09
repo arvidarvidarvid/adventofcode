@@ -41,15 +41,15 @@ def numbers_to_node(numbers):
     n_children = numbers[0]
     n_metadata = numbers[1]
 
-    children_offset = 2
+    _partial_length = 2
 
     for child_node in range(n_children):
-        child_node = numbers_to_node(numbers[children_offset:])
+        child_node = numbers_to_node(numbers[_partial_length:])
         node.children.append(child_node)
-        children_offset += child_node.length
+        _partial_length += child_node.length
 
-    node.metadata = numbers[children_offset:children_offset+n_metadata]
-    node.length = children_offset + n_metadata
+    node.metadata = numbers[_partial_length:_partial_length+n_metadata]
+    node.length = _partial_length + n_metadata
 
     return node
 
