@@ -1,11 +1,4 @@
-"""
-from copy import deepcopy
-from datetime import datetime, timedelta
-import itertools
-import math
 import numpy as np
-import re
-"""
 from tqdm import tqdm
 import logging
 
@@ -15,7 +8,7 @@ logger = logging.getLogger()
 
 def get_grid(width, height):
     grid = [[None for i in range(width)] for y in range(height)]
-    return grid
+    return np.array(grid)
 
 
 def power_level(x, y, grid_serial_number):
@@ -59,11 +52,9 @@ def find_highest_power(grid, side):
 
     for y in range(search_height):
         for x in range(search_width):
-            total_power = 0
-            for row in range(side):
-                total_power += sum(grid[y+row][x:x+side])
-            if total_power > highest_power_seen:
-                highest_power_seen = total_power
+            power = sum(sum(grid[y:y+side, x:x+side]))
+            if power > highest_power_seen:
+                highest_power_seen = power
                 highest_power_x = x
                 highest_power_y = y
 
@@ -100,9 +91,7 @@ def test():
     assert power_level(122,79,57) == -5
     assert power_level(217,196,39) == 0
     assert power_level(101,153,71) == 4
-    # p1(18, 10, 10)
     assert p1(18) == (33, 45)
-    #assert p2(test_input_p1) == 'ABC'
     logger.info('Tests passed')
 
 
