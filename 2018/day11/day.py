@@ -52,7 +52,7 @@ def find_highest_power(grid, side):
 
     for y in range(search_height):
         for x in range(search_width):
-            power = sum(sum(grid[y:y+side, x:x+side]))
+            power = grid[y:y+side, x:x+side].sum()
             if power > highest_power_seen:
                 highest_power_seen = power
                 highest_power_x = x
