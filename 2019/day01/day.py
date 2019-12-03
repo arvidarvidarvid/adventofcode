@@ -18,18 +18,35 @@ def get_input(filename='day.input'):
         return [line.strip() for line in file.readlines()]
 
 
+def mass_to_fuel(m):
+    return int((float(m) / 3)) - 2
+
+
+def total_mass_to_fuel(m):
+    initial_fuel = mass_to_fuel(m)
+    total = 0
+    latest = initial_fuel
+    while latest > 0:
+        total += latest
+        latest = mass_to_fuel(latest)
+    return total
+
+
 def p1(puzzle_input):
-    return None
+    total_fuel = 0
+    for p in puzzle_input:
+        total_fuel += mass_to_fuel(p)
+    return total_fuel
 
 
 def p2(puzzle_input):
-    return None
+    return sum([total_mass_to_fuel(p) for p in puzzle_input])
 
 
 def test():
-    test_input_p1 = get_input('test.input')
-    assert p1(test_input_p1) == 123
-    assert p2(test_input_p1) == 'ABC'
+    test_input_p1 = get_input('test_p1.input')
+    assert p1(test_input_p1) == 34241
+    assert p2([100756]) == 50346
     logger.info('Tests passed')
 
 

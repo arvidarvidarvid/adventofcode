@@ -27,9 +27,10 @@ def p2(puzzle_input):
 
 
 def test():
-    test_input_p1 = get_input('test.input')
-    assert p1(test_input_p1) == 123
-    assert p2(test_input_p1) == 'ABC'
+    test_input_p1 = get_input('test_p1.input')
+    test_input_p2 = get_input('test_p2.input')
+    assert p1(test_input_p1) == None
+    assert p2(test_input_p2) == None
     logger.info('Tests passed')
 
 
